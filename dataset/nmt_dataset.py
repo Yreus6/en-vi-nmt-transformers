@@ -27,7 +27,7 @@ class NMTDataset(Dataset):
         if self.mode == 'test':
             return src, tgt
 
-        src = self.src_tokenizer.encode(src)
-        tgt = self.tgt_tokenizer.encode(tgt)
+        src = self.src_tokenizer.encode(src.rstrip('\n'))
+        tgt = self.tgt_tokenizer.encode(tgt.rstrip('\n'))
 
         return torch.tensor(src.ids), torch.tensor(tgt.ids)

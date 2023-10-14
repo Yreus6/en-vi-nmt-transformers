@@ -1,13 +1,27 @@
 # Machine translation using Transformers
 
-### Train
+### Prepare data
+
 ```
-python3 train.py <args>
+python prepare_data.py --output-path <output-path>
+```
+
+### Train tokenizer
+
+```
+python train_tokenizer.py --train-file <train-file> --vocab-size <vocab-size> --save-dir <save-dir> --filename <save-filename>
+```
+
+### Train
+
+```
+python train.py <args>
 ```
 
 ### Test
+
 ```
-python3 test.py <args>
+python test.py <args>
 ```
 
 See `train.py` and `test.py` for arguments.

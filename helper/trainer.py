@@ -16,7 +16,7 @@ class Trainer(object):
         self.args = args
 
     def setup(self):
-        """initial the datasets, model, loss and optimizer"""
+        """initial the dataset, model, loss and optimizer"""
         pass
 
     def train(self):

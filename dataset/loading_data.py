@@ -1,7 +1,7 @@
 from torch.nn.utils.rnn import pad_sequence
 from torch.utils.data import DataLoader
 
-from datasets.nmt_dataset import NMTDataset
+from dataset.nmt_dataset import NMTDataset
 from models.transformers.utils import PAD_IDX
 
 

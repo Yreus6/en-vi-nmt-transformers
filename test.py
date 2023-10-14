@@ -4,7 +4,7 @@ import argparse
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from datasets.nmt_dataset import NMTDataset
+from dataset.nmt_dataset import NMTDataset
 from models.transformers.seq2seq_trans import seq2seq_trans
 from models.transformers.utils import DEVICE, translate
 from sacrebleu.metrics import BLEU

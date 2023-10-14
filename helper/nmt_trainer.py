@@ -9,7 +9,7 @@ import time
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
-from datasets.loading_data import loading_data
+from dataset.loading_data import loading_data
 from models.transformers.seq2seq_trans import (
     Seq2SeqTransformer,
     NUM_ENCODER_LAYERS,
@@ -61,6 +61,8 @@ class NMTTrainer(Trainer):
         self.writer = SummaryWriter(self.log_dir)
 
         self.save_list = SaveHandle(max_num=args.max_model_num)
+
+        self.hist_valid_scores = []
 
     def train(self):
         args = self.args
@@ -119,7 +121,6 @@ class NMTTrainer(Trainer):
         epoch_start = time.time()
         self.model.eval()
 
-        hist_valid_scores = []
         losses = 0.
         cum_tgt_words = 0.
 
@@ -139,7 +140,7 @@ class NMTTrainer(Trainer):
             tgt_out = tgt[1:, :]
             loss = self.loss_fn(logits.reshape(-1, logits.shape[-1]), tgt_out.reshape(-1))
             losses += loss.item()
-            tgt_word_num_to_predict = sum(len(s[1:]) for s in tgt)
+            tgt_word_num_to_predict = sum(s.shape[0] for s in tgt.transpose(0, 1))
             cum_tgt_words += tgt_word_num_to_predict
 
         val_loss = losses / len(list(self.val_loader))
@@ -152,8 +153,8 @@ class NMTTrainer(Trainer):
         )
 
         valid_metric = -ppl
-        is_better = len(hist_valid_scores) == 0 or valid_metric > max(hist_valid_scores)
-        hist_valid_scores.append(valid_metric)
+        is_better = len(self.hist_valid_scores) == 0 or valid_metric > max(self.hist_valid_scores)
+        self.hist_valid_scores.append(valid_metric)
 
         model_state_dic = self.model.state_dict()
 
