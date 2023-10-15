@@ -113,9 +113,12 @@ class NMTTrainer(Trainer):
 
         train_loss = losses / len(list(self.train_loader))
 
+        self.writer.add_scalar('train/loss', train_loss, self.epoch)
+
         logging.info(
             'Epoch {} Train, Loss: {:.2f} Cost {:.1f} sec'.format(self.epoch, train_loss, time.time() - epoch_start)
         )
+
         model_state_dic = self.model.state_dict()
         save_path = os.path.join(self.save_dir, '{}_ckpt.tar'.format(self.epoch))
         torch.save({
@@ -155,6 +158,8 @@ class NMTTrainer(Trainer):
 
         val_loss = losses / len(list(self.val_loader))
         ppl = np.exp(losses / cum_tgt_words)
+
+        self.writer.add_scalar('val/loss', val_loss, self.epoch)
         self.writer.add_scalar('val/ppl', ppl, self.epoch)
 
         logging.info(
