@@ -63,6 +63,8 @@ class NMTTrainer(Trainer):
         self.save_list = SaveHandle(max_num=args.max_model_num)
 
         self.hist_valid_scores = []
+        self.patience = 0
+        self.num_trial = 0
 
     def train(self):
         args = self.args
@@ -74,6 +76,12 @@ class NMTTrainer(Trainer):
                 self.val_epoch()
 
     def train_epoch(self):
+        if self.epoch < 10:
+            for param_group in self.optimizer.param_groups:
+                if param_group['lr'] >= 0.1 * self.args.lr:
+                    param_group['lr'] = self.args.lr * (self.epoch + 1) / 10
+        print('learning rate: {}, batch size: {}'.format(self.optimizer.param_groups[0]['lr'], self.args.batch_size))
+
         epoch_start = time.time()
         self.model.train()
 
@@ -140,7 +148,9 @@ class NMTTrainer(Trainer):
             tgt_out = tgt[1:, :]
             loss = self.loss_fn(logits.reshape(-1, logits.shape[-1]), tgt_out.reshape(-1))
             losses += loss.item()
-            tgt_word_num_to_predict = sum(s.shape[0] for s in tgt.transpose(0, 1))
+            tgt_word_num_to_predict = sum(
+                torch.sum(torch.where(x != PAD_IDX, 1, 0)).item() for x in tgt.transpose(0, 1)[:, 1:-1]
+            )
             cum_tgt_words += tgt_word_num_to_predict
 
         val_loss = losses / len(list(self.val_loader))
@@ -157,7 +167,40 @@ class NMTTrainer(Trainer):
         self.hist_valid_scores.append(valid_metric)
 
         model_state_dic = self.model.state_dict()
+        optim_state_dic = self.optimizer.state_dict()
 
         if is_better:
             print('save currently the best model to [%s]' % self.save_dir, file=sys.stderr)
             torch.save(model_state_dic, os.path.join(self.save_dir, 'best_model.pth'))
+            torch.save(optim_state_dic, os.path.join(self.save_dir, 'best_model.optim'))
+        elif self.patience < self.args.patience:
+            self.patience += 1
+            print('hit patience %d' % self.patience, file=sys.stderr)
+
+            if self.patience == self.args.patience:
+                self.num_trial += 1
+                print('hit #%d trial' % self.num_trial, file=sys.stderr)
+                if self.num_trial == self.args.max_num_trial:
+                    print('early stop!', file=sys.stderr)
+                    exit(0)
+
+                # decay lr, and restore from previously best checkpoint
+                lr = self.optimizer.param_groups[0]['lr'] * self.args.lr_decay
+                print('load previously best model and decay learning rate to %f' % lr, file=sys.stderr)
+
+                # load model
+                params = torch.load(
+                    os.path.join(self.save_dir, 'best_model.pth'), map_location=lambda storage, loc: storage
+                )
+                self.model.load_state_dict(params['state_dict'])
+                self.model = self.model.to(DEVICE)
+
+                print('restore parameters of the optimizers', file=sys.stderr)
+                self.optimizer.load_state_dict(torch.load(os.path.join(self.save_dir, 'best_model.optim')))
+
+                # set new lr
+                for param_group in self.optimizer.param_groups:
+                    param_group['lr'] = lr
+
+                # reset patience
+                self.patience = 0

@@ -63,6 +63,6 @@ def seq2seq_trans(model_file):
     model = Seq2SeqTransformer(
         NUM_ENCODER_LAYERS, NUM_DECODER_LAYERS, EMB_SIZE, NHEAD, SRC_VOCAB_SIZE, TGT_VOCAB_SIZE, FFN_HID_DIM
     )
-    model.load_state_dict(torch.load(model_file))
+    model.load_state_dict(torch.load(model_file, map_location=lambda storage, loc: storage))
 
     return model

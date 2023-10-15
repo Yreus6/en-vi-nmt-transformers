@@ -32,11 +32,8 @@ if __name__ == '__main__':
     args = parse_args()
 
     test_set = NMTDataset(
-        mode='test',
         src_data_path=args.test_src_data_path,
-        tgt_data_path=args.test_tgt_data_path,
-        src_vocab_path=args.src_vocab_path,
-        tgt_vocab_path=args.tgt_vocab_path
+        tgt_data_path=args.test_tgt_data_path
     )
     test_loader = DataLoader(
         dataset=test_set,

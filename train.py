@@ -26,6 +26,10 @@ def parse_args():
                         help='the weight decay')
     parser.add_argument('--clip-grad', type=float, default=5.0,
                         help='gradient clipping')
+    parser.add_argument('--patience', type=int, default=5,
+                        help='wait for how many iterations to decay learning rate')
+    parser.add_argument('--max-num-trial', type=int, default=5,
+                        help='terminate training after how many trials')
     parser.add_argument('--resume', default='',
                         help='the path of resume training model')
     parser.add_argument('--max-model-num', type=int, default=1,
