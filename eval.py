@@ -11,7 +11,7 @@ from sacrebleu.metrics import BLEU
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Test')
+    parser = argparse.ArgumentParser(description='Eval')
     parser.add_argument('--test-src-data-path', default='./data',
                         help='training src data file')
     parser.add_argument('--test-tgt-data-path', default='./data',
@@ -43,7 +43,7 @@ if __name__ == '__main__':
         pin_memory=False
     )
 
-    bleu = BLEU(lowercase=True)
+    bleu = BLEU()
 
     model = seq2seq_trans(args.model_file)
     model.eval()

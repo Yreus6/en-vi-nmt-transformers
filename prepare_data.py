@@ -1,15 +1,16 @@
 import os
 import argparse
 from datasets import load_dataset
+from tqdm import tqdm
+from underthesea import word_tokenize
 
 
 def generate_data(dataset, phase, output_path):
     en_path = os.path.join(output_path, f'{phase}.en.txt')
     vi_path = os.path.join(output_path, f'{phase}.vi.txt')
 
-    with open(en_path, 'w') as f_en, open(vi_path, 'w') as f_vi:
-        for i in range(len(dataset[phase])):
-            print('Idx: ', i)
+    with open(en_path, 'w', encoding='utf-8') as f_en, open(vi_path, 'w', encoding='utf-8') as f_vi:
+        for i in tqdm(range(len(dataset[phase]))):
             prompt = dataset[phase][i]['prompt']
             prompt_ques = prompt.split(':')[0].strip()
             translation = dataset[phase][i]['translation']
@@ -24,7 +25,7 @@ def generate_data(dataset, phase, output_path):
                 continue
 
             f_en.write(en_sent + '\n')
-            f_vi.write(vi_sent + '\n')
+            f_vi.write(word_tokenize(vi_sent, format='text') + '\n')
 
         f_en.close()
         f_vi.close()

@@ -37,14 +37,15 @@ class NMTTrainer(Trainer):
             if p.dim() > 1:
                 nn.init.xavier_uniform_(p)
         self.model.to(DEVICE)
-        self.loss_fn = torch.nn.CrossEntropyLoss(ignore_index=PAD_IDX)
+
+        self.loss_fn = torch.nn.CrossEntropyLoss(label_smoothing=args.label_smoothing, ignore_index=PAD_IDX)
         self.optimizer = optim.Adam(self.model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
 
         train_loader, val_loader = loading_data(args)
-        self.train_loader = train_loader
-        self.val_loader = val_loader
+        self.train_loader, self.val_loader = train_loader, val_loader
 
         self.start_epoch = 1
+
         if args.resume:
             suf = args.resume.rsplit('.', 1)[-1]
             if suf == 'tar':
@@ -87,7 +88,9 @@ class NMTTrainer(Trainer):
 
         losses = 0.
 
-        for src, tgt in tqdm(self.train_loader):
+        pbar = tqdm(self.train_loader)
+
+        for src, tgt in pbar:
             src = src.to(DEVICE)
             tgt = tgt.to(DEVICE)
 
@@ -106,10 +109,12 @@ class NMTTrainer(Trainer):
             loss.backward()
 
             # clip gradient
-            torch.nn.utils.clip_grad_norm(self.model.parameters(), self.args.clip_grad)
+            torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.args.clip_grad)
 
             self.optimizer.step()
             losses += loss.item()
+
+            pbar.set_postfix({'loss': loss.item()})
 
         train_loss = losses / len(list(self.train_loader))
 

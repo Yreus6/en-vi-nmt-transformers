@@ -8,9 +8,9 @@ SRC_VOCAB_SIZE = 52000
 TGT_VOCAB_SIZE = 52000
 EMB_SIZE = 512
 NHEAD = 8
-FFN_HID_DIM = 512
-NUM_ENCODER_LAYERS = 3
-NUM_DECODER_LAYERS = 3
+FFN_HID_DIM = 2048
+NUM_ENCODER_LAYERS = 6
+NUM_DECODER_LAYERS = 6
 
 
 class Seq2SeqTransformer(nn.Module):
@@ -22,7 +22,7 @@ class Seq2SeqTransformer(nn.Module):
         nhead,
         src_vocab_size,
         tgt_vocab_size,
-        dim_feedforward=512,
+        dim_feedforward=2048,
         dropout=0.1
     ):
         super(Seq2SeqTransformer, self).__init__()

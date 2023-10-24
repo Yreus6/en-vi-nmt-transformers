@@ -4,3 +4,4 @@ tokenizers~=0.14.1
 torch~=2.0.1+cu118
 tqdm==4.66.1
 datasets==2.14.5
+underthesea==6.8.0

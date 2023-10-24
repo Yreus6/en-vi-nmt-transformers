@@ -1,7 +1,5 @@
 from torch.utils.data import Dataset
 
-N = 30000
-
 
 class NMTDataset(Dataset):
     def __init__(self, src_data_path, tgt_data_path):
@@ -9,7 +7,7 @@ class NMTDataset(Dataset):
             src_lines = f_src.readlines()
             tgt_lines = f_tgt.readlines()
             assert len(src_lines) == len(tgt_lines)
-            self.src_tgt_pairs = list(zip(src_lines[:N], tgt_lines[:N]))
+            self.src_tgt_pairs = list(zip(src_lines, tgt_lines))
 
     def __len__(self):
         return len(self.src_tgt_pairs)

@@ -1,3 +1,4 @@
+import os
 import argparse
 import torch
 
@@ -22,6 +23,8 @@ def parse_args():
                         help='directory to save models.')
     parser.add_argument('--lr', type=float, default=5 * 1e-6,
                         help='the initial learning rate')
+    parser.add_argument('--label-smoothing', type=float, default=0.0,
+                        help='use label smoothing')
     parser.add_argument('--weight-decay', type=float, default=1e-5,
                         help='the weight decay')
     parser.add_argument('--clip-grad', type=float, default=5.0,
@@ -53,6 +56,7 @@ def parse_args():
 if __name__ == '__main__':
     args = parse_args()
     torch.backends.cudnn.benchmark = True
+    os.environ['TOKENIZERS_PARALLELISM'] = 'false'
     trainer = NMTTrainer(args)
     trainer.setup()
     trainer.train()
