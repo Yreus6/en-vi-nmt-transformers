@@ -1,9 +1,9 @@
 # Machine translation using Transformers
 
-### Prepare data
+### Prepare data (mtet or iwslt15)
 
 ```
-python prepare_data.py --output-path <output-path>
+python prepare_data_mtet.py --output-path <output-path>
 ```
 
 ### Train tokenizer
@@ -18,10 +18,10 @@ python train_tokenizer.py --train-file <train-file> --vocab-size <vocab-size> --
 python train.py <args>
 ```
 
-### Test
+### Evaluation
 
 ```
-python test.py <args>
+python eval.py <args>
 ```
 
-See `train.py` and `test.py` for arguments.
+See `train.py` and `eval.py` for arguments.

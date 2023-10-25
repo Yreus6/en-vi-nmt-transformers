@@ -4,8 +4,6 @@ from torch.nn import Transformer
 
 from models.transformers.embed import TokenEmbedding, PositionalEncoding
 
-SRC_VOCAB_SIZE = 52000
-TGT_VOCAB_SIZE = 52000
 EMB_SIZE = 512
 NHEAD = 8
 FFN_HID_DIM = 2048
@@ -59,10 +57,10 @@ class Seq2SeqTransformer(nn.Module):
         return self.transformer.decoder(self.positional_encoding(self.tgt_tok_emb(tgt)), memory, tgt_mask)
 
 
-def seq2seq_trans(model_file):
+def seq2seq_trans(args):
     model = Seq2SeqTransformer(
-        NUM_ENCODER_LAYERS, NUM_DECODER_LAYERS, EMB_SIZE, NHEAD, SRC_VOCAB_SIZE, TGT_VOCAB_SIZE, FFN_HID_DIM
+        NUM_ENCODER_LAYERS, NUM_DECODER_LAYERS, EMB_SIZE, NHEAD, args.src_vocab_size, args.tgt_vocab_size, FFN_HID_DIM
     )
-    model.load_state_dict(torch.load(model_file, map_location=lambda storage, loc: storage))
+    model.load_state_dict(torch.load(args.model_file, map_location=lambda storage, loc: storage))
 
     return model

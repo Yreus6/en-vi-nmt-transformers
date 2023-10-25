@@ -20,6 +20,10 @@ def parse_args():
                         help='src vocab data file')
     parser.add_argument('--tgt-vocab-path', default='./data',
                         help='tgt vocab data file')
+    parser.add_argument('--src-vocab-size', type=int,
+                        help='src vocab data size')
+    parser.add_argument('--tgt-vocab-size', type=int,
+                        help='tgt vocab data size')
     parser.add_argument('--model-file', default='model/model.pth',
                         help='model file')
 
@@ -45,7 +49,7 @@ if __name__ == '__main__':
 
     bleu = BLEU()
 
-    model = seq2seq_trans(args.model_file)
+    model = seq2seq_trans(args)
     model.eval()
     model.to(DEVICE)
 

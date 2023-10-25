@@ -56,10 +56,10 @@ def translate(model, src_sentence_batch, args):
     encoded_src_batch = src_tokenizer.encode_batch(src_sentence_batch)
     tgt_batch = []
 
-    for i in range(encoded_src_batch):
+    for i in range(len(encoded_src_batch)):
         src_token_ids = encoded_src_batch[i].ids
-        src = torch.tensor(src_token_ids)
         num_token_ids = len(src_token_ids)
+        src = torch.tensor(src_token_ids).view(num_token_ids, -1)
         src_mask = (torch.zeros(num_token_ids, num_token_ids)).type(torch.bool)
         tgt_token_ids = greedy_decode(model, src, src_mask, max_len=num_token_ids + 5, start_symbol=BOS_IDX).flatten()
         tgt_tokens = [tgt_tokenizer.id_to_token(x) for x in tgt_token_ids if (x != BOS_IDX and x != EOS_IDX)]

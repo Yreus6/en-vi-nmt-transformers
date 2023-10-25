@@ -16,9 +16,7 @@ from models.transformers.seq2seq_trans import (
     NUM_DECODER_LAYERS,
     EMB_SIZE,
     NHEAD,
-    FFN_HID_DIM,
-    SRC_VOCAB_SIZE,
-    TGT_VOCAB_SIZE
+    FFN_HID_DIM
 )
 from models.transformers.utils import DEVICE, create_mask, PAD_IDX
 from .trainer import Trainer
@@ -31,7 +29,8 @@ class NMTTrainer(Trainer):
     def setup(self):
         args = self.args
         self.model = Seq2SeqTransformer(
-            NUM_ENCODER_LAYERS, NUM_DECODER_LAYERS, EMB_SIZE, NHEAD, SRC_VOCAB_SIZE, TGT_VOCAB_SIZE, FFN_HID_DIM
+            NUM_ENCODER_LAYERS, NUM_DECODER_LAYERS, EMB_SIZE, NHEAD, args.src_vocab_size, args.tgt_vocab_size,
+            FFN_HID_DIM
         )
         for p in self.model.parameters():
             if p.dim() > 1:
