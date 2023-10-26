@@ -17,7 +17,7 @@ if __name__ == '__main__':
     file_name = args.filename
 
     if not os.path.exists(save_dir):
-        os.mkdir(save_dir)
+        os.makedirs(save_dir)
 
     save_file = os.path.join(save_dir, file_name)
 
