@@ -3,19 +3,19 @@ import torch
 import argparse
 from torch.utils.data import DataLoader
 from tqdm import tqdm
+from sacrebleu.metrics import BLEU
 
 from dataset.nmt_dataset import NMTDataset
 from models.transformers.seq2seq_trans import seq2seq_trans
 from models.transformers.utils import DEVICE, translate
-from sacrebleu.metrics import BLEU
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Eval')
     parser.add_argument('--test-src-data-path', default='./data',
-                        help='training src data file')
+                        help='test src data file')
     parser.add_argument('--test-tgt-data-path', default='./data',
-                        help='training tgt data file')
+                        help='test tgt data file')
     parser.add_argument('--src-vocab-path', default='./data',
                         help='src vocab data file')
     parser.add_argument('--tgt-vocab-path', default='./data',
@@ -26,6 +26,12 @@ def parse_args():
                         help='tgt vocab data size')
     parser.add_argument('--model-file', default='model/model.pth',
                         help='model file')
+    parser.add_argument('--save-pred-file', default='./pred.txt',
+                        help='save file')
+    parser.add_argument('--beam-search', type=bool, default=True,
+                        help='whether to use beam search')
+    parser.add_argument('--beam-size', type=int, default=5,
+                        help='beam size')
 
     args = parser.parse_args()
 
@@ -34,6 +40,7 @@ def parse_args():
 
 if __name__ == '__main__':
     args = parse_args()
+    save_pred_file = args.save_pred_file
 
     test_set = NMTDataset(
         src_data_path=args.test_src_data_path,
@@ -60,8 +67,13 @@ if __name__ == '__main__':
         with torch.set_grad_enabled(False):
             outputs = translate(model, src, args)
 
-        references += [tgt]
+        references += tgt
         predictions += outputs
 
-    result = bleu.corpus_score(hypotheses=predictions, references=references)
+    with open(save_pred_file, 'w', encoding='utf-8') as f:
+        for p in tqdm(predictions):
+            f.write(p + '\n')
+        f.close()
+
+    result = bleu.corpus_score(hypotheses=predictions, references=[references])
     print(f'Corpus BLEU: {result.score}', file=sys.stderr)
