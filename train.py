@@ -25,8 +25,10 @@ def parse_args():
                         help='tgt vocab data size')
     parser.add_argument('--save-dir', default='./checkpoints',
                         help='directory to save models.')
-    parser.add_argument('--lr', type=float, default=5 * 1e-6,
+    parser.add_argument('--lr', type=float, default=1e-3,
                         help='the initial learning rate')
+    parser.add_argument('--lr-decay', type=float, default=0.5,
+                        help='learning rate decay')
     parser.add_argument('--label-smoothing', type=float, default=0.0,
                         help='use label smoothing')
     parser.add_argument('--weight-decay', type=float, default=1e-5,
@@ -44,7 +46,7 @@ def parse_args():
     parser.add_argument('--max-epoch', type=int, default=100,
                         help='max training epoch')
     parser.add_argument('--val-epoch', type=int, default=5,
-                        help='the num of steps to log training information')
+                        help='the num of steps to start val')
     parser.add_argument('--val-start', type=int, default=5,
                         help='the epoch start to val')
     parser.add_argument('--batch-size', type=int, default=8,

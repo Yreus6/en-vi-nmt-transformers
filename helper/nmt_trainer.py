@@ -57,7 +57,7 @@ class NMTTrainer(Trainer):
             else:
                 raise RuntimeError('Invalid model file')
 
-        self.log_dir = os.path.join('./runs', args.save_dir.split('/')[-1])
+        self.log_dir = os.path.join('./runs', self.save_dir.split('/')[-1])
         self.writer = SummaryWriter(self.log_dir)
 
         self.save_list = SaveHandle(max_num=args.max_model_num)
@@ -76,10 +76,10 @@ class NMTTrainer(Trainer):
                 self.val_epoch()
 
     def train_epoch(self):
-        if self.epoch < 10:
+        if self.epoch <= 10:
             for param_group in self.optimizer.param_groups:
                 if param_group['lr'] >= 0.1 * self.args.lr:
-                    param_group['lr'] = self.args.lr * (self.epoch + 1) / 10
+                    param_group['lr'] = self.args.lr * (self.epoch / 10)
         print('learning rate: {}, batch size: {}'.format(self.optimizer.param_groups[0]['lr'], self.args.batch_size))
 
         epoch_start = time.time()
