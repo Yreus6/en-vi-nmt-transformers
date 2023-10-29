@@ -28,10 +28,14 @@ def parse_args():
                         help='model file')
     parser.add_argument('--save-pred-file', default='./pred.txt',
                         help='save file')
-    parser.add_argument('--beam-search', type=bool, default=True,
+    parser.add_argument('--beam-search', action=argparse.BooleanOptionalAction,
                         help='whether to use beam search')
     parser.add_argument('--beam-size', type=int, default=5,
                         help='beam size')
+    parser.add_argument('--max-decoding-time-step', type=int, default=70,
+                        help='maximum number of decoding time steps')
+    parser.add_argument('--temperature', type=float, default=1.0,
+                        help='beam search decoding hyperparameter')
 
     args = parser.parse_args()
 
@@ -67,8 +71,8 @@ if __name__ == '__main__':
         with torch.set_grad_enabled(False):
             outputs = translate(model, src, args)
 
-        references += tgt
-        predictions += outputs
+        references += [s.replace('_', ' ') for s in tgt]
+        predictions += [s.replace('_', ' ') for s in outputs]
 
     with open(save_pred_file, 'w', encoding='utf-8') as f:
         for p in tqdm(predictions):

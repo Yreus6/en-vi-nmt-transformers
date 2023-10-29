@@ -201,7 +201,7 @@ class NMTTrainer(Trainer):
                 params = torch.load(
                     os.path.join(self.save_dir, 'best_model.pth'), map_location=lambda storage, loc: storage
                 )
-                self.model.load_state_dict(params['state_dict'])
+                self.model.load_state_dict(params)
                 self.model = self.model.to(DEVICE)
 
                 print('restore parameters of the optimizers', file=sys.stderr)
