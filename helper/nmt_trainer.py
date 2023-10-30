@@ -3,12 +3,12 @@ import sys
 import numpy as np
 import torch
 from torch import optim, nn
+from torch.utils.tensorboard import SummaryWriter
 import logging
 import time
-
-from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
+from components.BPE.BPE_tokenizer import BPETokenizer
 from dataset.loading_data import loading_data
 from models.transformers.seq2seq_trans import (
     Seq2SeqTransformer,
@@ -28,8 +28,10 @@ torch.manual_seed(42)
 class NMTTrainer(Trainer):
     def setup(self):
         args = self.args
+        self.src_vocab_size = BPETokenizer.get_vocab_size(args.src_vocab_path)
+        self.tgt_vocab_size = BPETokenizer.get_vocab_size(args.tgt_vocab_path)
         self.model = Seq2SeqTransformer(
-            NUM_ENCODER_LAYERS, NUM_DECODER_LAYERS, EMB_SIZE, NHEAD, args.src_vocab_size, args.tgt_vocab_size,
+            NUM_ENCODER_LAYERS, NUM_DECODER_LAYERS, EMB_SIZE, NHEAD, self.src_vocab_size, self.tgt_vocab_size,
             FFN_HID_DIM
         )
         for p in self.model.parameters():
@@ -53,7 +55,8 @@ class NMTTrainer(Trainer):
                 self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
                 self.start_epoch = checkpoint['epoch'] + 1
             elif suf == 'pth':
-                self.model.load_state_dict(torch.load(args.resume, DEVICE))
+                params = torch.load(args.resume, DEVICE)
+                self.model.load_state_dict(params['model_state_dict'])
             else:
                 raise RuntimeError('Invalid model file')
 
@@ -116,8 +119,10 @@ class NMTTrainer(Trainer):
             pbar.set_postfix({'loss': loss.item()})
 
         train_loss = losses / len(list(self.train_loader))
+        ppl = np.exp(train_loss)
 
         self.writer.add_scalar('train/loss', train_loss, self.epoch)
+        self.writer.add_scalar('train/ppl', ppl, self.epoch)
 
         logging.info(
             'Epoch {} Train, Loss: {:.2f} Cost {:.1f} sec'.format(self.epoch, train_loss, time.time() - epoch_start)
@@ -137,7 +142,6 @@ class NMTTrainer(Trainer):
         self.model.eval()
 
         losses = 0.
-        cum_tgt_words = 0.
 
         for src, tgt in tqdm(self.val_loader):
             src = src.to(DEVICE)
@@ -155,13 +159,9 @@ class NMTTrainer(Trainer):
             tgt_out = tgt[1:, :]
             loss = self.loss_fn(logits.reshape(-1, logits.shape[-1]), tgt_out.reshape(-1))
             losses += loss.item()
-            tgt_word_num_to_predict = sum(
-                torch.sum(torch.where(x != PAD_IDX, 1, 0)).item() for x in tgt.transpose(0, 1)[:, 1:-1]
-            )
-            cum_tgt_words += tgt_word_num_to_predict
 
         val_loss = losses / len(list(self.val_loader))
-        ppl = np.exp(losses / cum_tgt_words)
+        ppl = np.exp(val_loss)
 
         self.writer.add_scalar('val/loss', val_loss, self.epoch)
         self.writer.add_scalar('val/ppl', ppl, self.epoch)
@@ -175,13 +175,17 @@ class NMTTrainer(Trainer):
         is_better = len(self.hist_valid_scores) == 0 or valid_metric > max(self.hist_valid_scores)
         self.hist_valid_scores.append(valid_metric)
 
-        model_state_dic = self.model.state_dict()
-        optim_state_dic = self.optimizer.state_dict()
+        model_state_dict = self.model.state_dict()
+        optim_state_dict = self.optimizer.state_dict()
 
         if is_better:
             print('save currently the best model to [%s]' % self.save_dir, file=sys.stderr)
-            torch.save(model_state_dic, os.path.join(self.save_dir, 'best_model.pth'))
-            torch.save(optim_state_dic, os.path.join(self.save_dir, 'best_model.optim'))
+            torch.save({
+                'src_vocab_size': self.src_vocab_size,
+                'tgt_vocab_size': self.tgt_vocab_size,
+                'model_state_dict': model_state_dict
+            }, os.path.join(self.save_dir, 'best_model.pth'))
+            torch.save(optim_state_dict, os.path.join(self.save_dir, 'best_model.optim'))
         elif self.patience < self.args.patience:
             self.patience += 1
             print('hit patience %d' % self.patience, file=sys.stderr)
@@ -201,7 +205,7 @@ class NMTTrainer(Trainer):
                 params = torch.load(
                     os.path.join(self.save_dir, 'best_model.pth'), map_location=lambda storage, loc: storage
                 )
-                self.model.load_state_dict(params)
+                self.model.load_state_dict(params['model_state_dict'])
                 self.model = self.model.to(DEVICE)
 
                 print('restore parameters of the optimizers', file=sys.stderr)

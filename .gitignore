@@ -162,5 +162,5 @@ cython_debug/
 data
 checkpoints
 vocab
-*.txt
+pred-*.txt
 runs

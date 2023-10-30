@@ -4,7 +4,7 @@ from torch.utils.data import DataLoader
 
 from dataset.nmt_dataset import NMTDataset
 from models.transformers.utils import PAD_IDX
-from text_tokenizers.BPE.BPE_tokenizer import BPETokenizer
+from components.BPE.BPE_tokenizer import BPETokenizer
 
 
 def loading_data(args):

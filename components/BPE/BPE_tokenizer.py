@@ -37,3 +37,7 @@ class BPETokenizer:
         )
 
         return tokenizer
+
+    @staticmethod
+    def get_vocab_size(vocab_file):
+        return BPETokenizer.get_tokenizer(vocab_file).get_vocab_size()

@@ -58,9 +58,11 @@ class Seq2SeqTransformer(nn.Module):
 
 
 def seq2seq_trans(args):
+    params = torch.load(args.model_file, map_location=lambda storage, loc: storage)
     model = Seq2SeqTransformer(
-        NUM_ENCODER_LAYERS, NUM_DECODER_LAYERS, EMB_SIZE, NHEAD, args.src_vocab_size, args.tgt_vocab_size, FFN_HID_DIM
+        NUM_ENCODER_LAYERS, NUM_DECODER_LAYERS, EMB_SIZE, NHEAD, params['src_vocab_size'], params['tgt_vocab_size'],
+        FFN_HID_DIM
     )
-    model.load_state_dict(torch.load(args.model_file, map_location=lambda storage, loc: storage))
+    model.load_state_dict(params['model_state_dict'])
 
     return model

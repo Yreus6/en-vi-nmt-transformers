@@ -7,7 +7,8 @@ from sacrebleu.metrics import BLEU
 
 from dataset.nmt_dataset import NMTDataset
 from models.transformers.seq2seq_trans import seq2seq_trans
-from models.transformers.utils import DEVICE, translate
+from models.transformers.translator import Translator
+from models.transformers.utils import DEVICE
 
 
 def parse_args():
@@ -20,10 +21,6 @@ def parse_args():
                         help='src vocab data file')
     parser.add_argument('--tgt-vocab-path', default='./data',
                         help='tgt vocab data file')
-    parser.add_argument('--src-vocab-size', type=int,
-                        help='src vocab data size')
-    parser.add_argument('--tgt-vocab-size', type=int,
-                        help='tgt vocab data size')
     parser.add_argument('--model-file', default='model/model.pth',
                         help='model file')
     parser.add_argument('--save-pred-file', default='./pred.txt',
@@ -67,9 +64,11 @@ if __name__ == '__main__':
     predictions = []
     references = []
 
+    translator = Translator(args)
+
     for src, tgt in tqdm(test_loader):
         with torch.set_grad_enabled(False):
-            outputs = translate(model, src, args)
+            outputs = translator.translate(model, src)
 
         references += [s.replace('_', ' ') for s in tgt]
         predictions += [s.replace('_', ' ') for s in outputs]

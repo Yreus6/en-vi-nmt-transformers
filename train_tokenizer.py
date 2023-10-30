@@ -1,7 +1,7 @@
 import os
 import argparse
 
-from text_tokenizers.BPE.BPE_tokenizer import BPETokenizer
+from components.BPE.BPE_tokenizer import BPETokenizer
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Train tokenizer')

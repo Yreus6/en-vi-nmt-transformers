@@ -19,10 +19,6 @@ def parse_args():
                         help='src vocab data file')
     parser.add_argument('--tgt-vocab-path', default='./data',
                         help='tgt vocab data file')
-    parser.add_argument('--src-vocab-size', type=int,
-                        help='src vocab data size')
-    parser.add_argument('--tgt-vocab-size', type=int,
-                        help='tgt vocab data size')
     parser.add_argument('--save-dir', default='./checkpoints',
                         help='directory to save models.')
     parser.add_argument('--lr', type=float, default=1e-3,
